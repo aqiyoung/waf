@@ -2,7 +2,7 @@ import axios from 'axios'
 import { getAuthHeader, clearAuthData } from './auth'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://localhost:8009/api',
   timeout: 10000
 })
 
