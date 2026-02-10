@@ -1,4 +1,8 @@
 import os
+
+# 首先导入修复模块，在导入 passlib 之前修复 detect_wrap_bug 函数
+import fix_passlib
+
 # 禁用 passlib 的 wrap bug 检测，避免密码长度超过 72 字节的错误
 os.environ['PASSLIB_NO_BYPASS_WRAP_BUG'] = '1'
 
