@@ -5,7 +5,7 @@ services:
     image: ghcr.io/aqiyoung/waf-backend:latest
     container_name: waf-backend
     ports:
-      - "8000:8000"
+      - "8009:8000"
     restart: unless-stopped
     networks:
       - waf-network
@@ -14,7 +14,7 @@ services:
     image: ghcr.io/aqiyoung/waf-frontend:latest
     container_name: waf-frontend
     ports:
-      - "80:80"
+      - "89:80"
     restart: unless-stopped
     depends_on:
       - backend
