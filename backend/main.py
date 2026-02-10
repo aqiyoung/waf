@@ -45,7 +45,9 @@ class TokenData(BaseModel):
 
 # 用户数据存储（简化版，实际项目中应使用数据库）
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    # 截断密码，确保不超过 72 字节（bcrypt 限制）
+    truncated_password = password[:72]
+    return pwd_context.hash(truncated_password)
 
 # 默认用户：admin / admin123
 users_db = {
@@ -69,11 +71,7 @@ def verify_password(plain_password, hashed_password):
     truncated_password = plain_password[:72]
     return pwd_context.verify(truncated_password, hashed_password)
 
-# 获取密码哈希
-def get_password_hash(password):
-    # 截断密码，确保不超过 72 字节（bcrypt 限制）
-    truncated_password = password[:72]
-    return pwd_context.hash(truncated_password)
+
 
 # 创建访问令牌
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
