@@ -1,15 +1,102 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import uvicorn
 import time
 import ipaddress
 import json
 import os
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel
 
 # 加载环境变量
 load_dotenv()
+
+# 认证配置
+SECRET_KEY = os.environ.get("SECRET_KEY", "your-secret-key-change-in-production")
+ALGORITHM = os.environ.get("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24小时
+
+# 密码加密上下文
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# OAuth2 密码承载令牌
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+# Pydantic 模型
+class User(BaseModel):
+    id: int
+    username: str
+    role: str
+
+class UserInDB(User):
+    password_hash: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+# 用户数据存储（简化版，实际项目中应使用数据库）
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+# 默认用户：admin / admin123
+users_db = {
+    "admin": {
+        "id": 1,
+        "username": "admin",
+        "password_hash": get_password_hash("admin123"),
+        "role": "admin"
+    }
+}
+
+# 获取用户
+def get_user(db, username: str):
+    if username in db:
+        user_dict = db[username]
+        return UserInDB(**user_dict)
+
+# 验证密码
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+# 创建访问令牌
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+# 获取当前用户
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    user = get_user(users_db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
 
 # 创建 FastAPI 应用
 app = FastAPI(
@@ -176,6 +263,37 @@ async def root():
         "version": "1.0.0",
         "status": "active"
     }
+
+# 认证相关 API
+
+# 登录接口
+@app.post("/api/auth/login", response_model=Token)
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = get_user(users_db, form_data.username)
+    if not user or not verify_password(form_data.password, user.password_hash):
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username, "id": user.id, "role": user.role},
+        expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+# 获取当前用户信息
+@app.get("/api/auth/me", response_model=User)
+async def get_current_user_info(current_user: UserInDB = Depends(get_current_user)):
+    return User(id=current_user.id, username=current_user.username, role=current_user.role)
+
+# 登出接口
+@app.post("/api/auth/logout")
+async def logout(current_user: UserInDB = Depends(get_current_user)):
+    # JWT 是无状态的，登出主要在前端处理（清除 token）
+    # 这里可以添加额外的逻辑，如将 token 加入黑名单等
+    return {"message": "Successfully logged out"}
 
 # 健康检查
 @app.get("/health")
