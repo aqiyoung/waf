@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: ghcr.io/aqiyoung/waf-backend:latest
+    build: ./backend
     container_name: waf-backend
     network_mode: host
     environment:
@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: ghcr.io/aqiyoung/waf-frontend:latest
+    build: ./frontend
     container_name: waf-frontend
     network_mode: host
     environment:
