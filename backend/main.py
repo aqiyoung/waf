@@ -65,7 +65,15 @@ def get_user(db, username: str):
 
 # 验证密码
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    # 截断密码，确保不超过 72 字节（bcrypt 限制）
+    truncated_password = plain_password[:72]
+    return pwd_context.verify(truncated_password, hashed_password)
+
+# 获取密码哈希
+def get_password_hash(password):
+    # 截断密码，确保不超过 72 字节（bcrypt 限制）
+    truncated_password = password[:72]
+    return pwd_context.hash(truncated_password)
 
 # 创建访问令牌
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
