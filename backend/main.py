@@ -1,10 +1,5 @@
 import os
-
-# 首先导入修复模块，在导入 passlib 之前修复 detect_wrap_bug 函数
-import fix_passlib
-
-# 禁用 passlib 的 wrap bug 检测，避免密码长度超过 72 字节的错误
-os.environ['PASSLIB_NO_BYPASS_WRAP_BUG'] = '1'
+import bcrypt
 
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +12,6 @@ import json
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from pydantic import BaseModel
 
 # 加载环境变量
@@ -27,9 +21,6 @@ load_dotenv()
 SECRET_KEY = os.environ.get("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = os.environ.get("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24小时
-
-# 密码加密上下文
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # OAuth2 密码承载令牌
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -54,7 +45,9 @@ class TokenData(BaseModel):
 def get_password_hash(password):
     # 截断密码，确保不超过 72 字节（bcrypt 限制）
     truncated_password = password[:72]
-    return pwd_context.hash(truncated_password)
+    # 使用 bcrypt 库直接哈希密码
+    hashed = bcrypt.hashpw(truncated_password.encode('utf-8'), bcrypt.gensalt())
+    return hashed.decode('utf-8')
 
 # 默认用户：admin / admin123
 users_db = {
@@ -76,7 +69,8 @@ def get_user(db, username: str):
 def verify_password(plain_password, hashed_password):
     # 截断密码，确保不超过 72 字节（bcrypt 限制）
     truncated_password = plain_password[:72]
-    return pwd_context.verify(truncated_password, hashed_password)
+    # 使用 bcrypt 库直接验证密码
+    return bcrypt.checkpw(truncated_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 
