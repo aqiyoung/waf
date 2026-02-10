@@ -2,8 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./backend
+    image: ghcr.io/aqiyoung/waf-backend:latest
     container_name: waf-backend
     ports:
       - "8000:8000"
@@ -12,8 +11,7 @@ services:
       - waf-network
 
   frontend:
-    build:
-      context: ./frontend
+    image: ghcr.io/aqiyoung/waf-frontend:latest
     container_name: waf-frontend
     ports:
       - "80:80"
