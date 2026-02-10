@@ -55,6 +55,7 @@ waf/
 #### 前提条件
 - Docker 和 Docker Compose 已安装
 - 网络连接正常
+- NAS 主机上的 8009 和 89 端口未被占用
 
 #### 部署步骤
 
@@ -70,8 +71,12 @@ waf/
    ```
 
 3. **访问应用**
-   - 前端面板：`http://localhost`
-   - 后端 API：`http://localhost:8000/docs`
+   - 前端面板：`http://NAS_IP:89`
+   - 后端 API：`http://NAS_IP:8009/docs`
+
+#### 网络模式
+- 使用 `host` 网络模式，直接监控 NAS 主机的网络活动
+- 能够捕获到所有网络请求，包括 IPv6 流量
 
 ### 2. 本地开发
 
