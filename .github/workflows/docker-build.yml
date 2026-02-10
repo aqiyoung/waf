@@ -23,21 +23,25 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # 只有在有凭证时才登录
+        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
 
-      - name: Build and push backend image
+      - name: Build backend image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
-          push: ${{ github.event_name == 'push' }}
+          # 只有在推送事件且有凭证时才推送
+          push: ${{ github.event_name == 'push' && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/waf-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push frontend image
+      - name: Build frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
-          push: ${{ github.event_name == 'push' }}
+          # 只有在推送事件且有凭证时才推送
+          push: ${{ github.event_name == 'push' && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/waf-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -45,7 +49,8 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # 只有在有凭证时才执行部署
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != ''
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
