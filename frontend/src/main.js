@@ -8,3 +8,6 @@ const app = createApp(App)
 app.use(router)
 app.use(Antd)
 app.mount('#app')
+
+console.log('Ant Design Vue initialized')
+console.log('Router initialized:', router.options.routes)

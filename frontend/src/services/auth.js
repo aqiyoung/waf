@@ -2,15 +2,22 @@ import api from './api'
 
 // 登录
 export const login = async (username, password) => {
-  const response = await api.post('/auth/login', new URLSearchParams({
-    username,
-    password
-  }), {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    }
-  })
-  return response.data
+  console.log('Login request:', { username, password })
+  try {
+    const response = await api.post('/auth/login', new URLSearchParams({
+      username,
+      password
+    }), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    console.log('Login response:', response.data)
+    return response.data
+  } catch (error) {
+    console.error('Login error:', error.response || error)
+    throw error
+  }
 }
 
 // 获取当前用户信息
