@@ -10,6 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# 给 start.sh 添加执行权限
+RUN chmod +x start.sh
+
 EXPOSE 8000
 
-CMD ["python", "main.py"]
+CMD ["./start.sh"]
