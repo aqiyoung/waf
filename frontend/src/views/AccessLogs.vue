@@ -31,17 +31,14 @@
       row-key="index"
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'ip'">
+        <template v-if="column.key === 'timestamp'">
+          <span>{{ formatTime(record.timestamp) }}</span>
+        </template>
+        <template v-else-if="column.key === 'ip'">
           <span>{{ record.ip }} <span v-if="record.is_ipv6" class="ipv6-badge">IPv6</span></span>
         </template>
         <template v-else-if="column.key === 'path'">
           <span class="path">{{ record.path }}</span>
-        </template>
-        <template v-else-if="column.key === 'query'">
-          <span class="query">{{ formatQuery(record.query) }}</span>
-        </template>
-        <template v-else-if="column.key === 'user_agent'">
-          <span class="user-agent">{{ record.user_agent }}</span>
         </template>
         <template v-else-if="column.key === 'is_attack'">
           <a-tag :color="record.is_attack ? 'red' : 'green'">
@@ -88,11 +85,7 @@ export default {
         title: '时间',
         dataIndex: 'timestamp',
         key: 'timestamp',
-        width: 180,
-        render: (timestamp) => {
-          const date = new Date(timestamp * 1000)
-          return date.toLocaleString('zh-CN')
-        }
+        width: 180
       },
       {
         title: 'IP 地址',
@@ -113,14 +106,25 @@ export default {
         ellipsis: true
       },
       {
-        title: '查询参数',
-        dataIndex: 'query',
-        key: 'query',
-        width: 200,
-        ellipsis: true
+        title: '地理位置',
+        dataIndex: 'geolocation',
+        key: 'geolocation',
+        width: 150,
+        render: (geolocation) => {
+          return geolocation?.city || '-'
+        }
       },
       {
         title: '状态',
+        dataIndex: 'status',
+        key: 'status',
+        width: 80,
+        render: (status) => {
+          return status || '-'
+        }
+      },
+      {
+        title: '是否攻击',
         dataIndex: 'is_attack',
         key: 'is_attack',
         width: 80
@@ -133,13 +137,7 @@ export default {
       }
     ]
     
-    // 格式化查询参数
-    const formatQuery = (query) => {
-      if (!query || Object.keys(query).length === 0) {
-        return '-'
-      }
-      return JSON.stringify(query)
-    }
+    
     
     // 过滤日志
     const filteredLogs = computed(() => {
@@ -201,6 +199,24 @@ export default {
       pagination.value.current = 1
     }
     
+    // 格式化时间戳
+    const formatTime = (timestamp) => {
+      if (!timestamp) return '-'  
+      // 检查 timestamp 是否为字符串，如果是，尝试转换为数字
+      const ts = typeof timestamp === 'string' ? parseFloat(timestamp) : timestamp
+      // 检查是否为有效的数字
+      if (isNaN(ts)) return '-'  
+      const date = new Date(ts * 1000) // 转换为毫秒
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
+    }
+    
     onMounted(() => {
       loadLogs()
     })
@@ -213,10 +229,10 @@ export default {
       pagination,
       columns,
       filteredLogs,
-      formatQuery,
       refreshLogs,
       handleSearch,
-      handleFilterChange
+      handleFilterChange,
+      formatTime
     }
   }
 }

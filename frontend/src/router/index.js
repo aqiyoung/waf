@@ -28,9 +28,27 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/ipv6-stats',
-    name: 'IPv6Stats',
-    component: () => import('../views/IPv6Stats.vue'),
+    path: '/firewall-config',
+    name: 'FirewallConfig',
+    component: () => import('../views/FirewallConfig.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/protected-apps',
+    name: 'ProtectedApps',
+    component: () => import('../views/ProtectedApps.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/protected-apps/add',
+    name: 'AddProtectedApp',
+    component: () => import('../views/AddProtectedApp.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/protected-apps/:id',
+    name: 'EditProtectedApp',
+    component: () => import('../views/EditProtectedApp.vue'),
     meta: { requiresAuth: true }
   },
   // 404 页面

@@ -107,8 +107,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 # 创建 FastAPI 应用
 app = FastAPI(
-    title="WAF for Feiniu NAS",
-    description="Web Application Firewall with IPv6 monitoring for Feiniu NAS",
+    title="应用防火墙",
+    description="Web Application Firewall with IPv6 monitoring and security protection",
     version="1.0.0"
 )
 
@@ -125,6 +125,16 @@ app.add_middleware(
 access_logs = []
 attack_logs = []
 
+# IP 黑名单
+ip_blacklist = set()
+
+# 请求频率限制（IP 地址 -> 请求时间列表）
+request_rate_limit = {}
+
+# 频率限制配置
+RATE_LIMIT_WINDOW = 60  # 时间窗口（秒）
+RATE_LIMIT_MAX_REQUESTS = 100  # 时间窗口内最大请求数
+
 # WAF 规则
 WAF_RULES = {
     "sql_injection": [
@@ -133,36 +143,175 @@ WAF_RULES = {
         r"DROP TABLE",
         r"INSERT INTO",
         r"UPDATE.*SET",
+        r"DELETE FROM",
+        r"CREATE TABLE",
+        r"ALTER TABLE",
+        r"TRUNCATE TABLE",
+        r"EXEC sp_",
+        r"xp_",
+        r"\bSELECT\b.*\bFROM\b",
+        r"\bWHERE\b.*\bOR\b",
+        r"\bAND\b.*\b1=1\b",
     ],
     "xss": [
         r"<script",
         r"javascript:",
         r"onerror=",
         r"onload=",
+        r"onclick=",
+        r"onmouseover=",
+        r"<iframe",
+        r"<object",
+        r"<embed",
+        r"<link",
+        r"<meta",
+        r"<img.*src=.*javascript:",
+        r"</script>",
+        r"eval\(",
+        r"document\.write",
+        r"window\.location",
     ],
     "command_injection": [
         r";\s*",
         r"\|\|\s*",
         r"\&\&\s*",
         r"`.*`",
+        r"\|\s*",
+        r"\<\s*",
+        r"\>\s*",
+        r"\|\s*grep\s*",
+        r"\|\s*awk\s*",
+        r"\|\s*sed\s*",
+        r"\|\s*sort\s*",
+        r"\|\s*uniq\s*",
+        r"\|\s*wc\s*",
+        r"\|\s*cat\s*",
+        r"\|\s*tac\s*",
+        r"\|\s*head\s*",
+        r"\|\s*tail\s*",
+    ],
+    "csrf": [
+        r"\bcsrf\b",
+        r"\bcross-site\b",
+        r"\brequest forgery\b",
+    ],
+    "file_upload": [
+        r"\.php$",
+        r"\.asp$",
+        r"\.aspx$",
+        r"\.jsp$",
+        r"\.jspx$",
+        r"\.exe$",
+        r"\.sh$",
+        r"\.bat$",
+        r"\.cmd$",
+        r"\.py$",
+        r"\.pl$",
+        r"\.perl$",
+        r"\.cgi$",
+        r"\.js$",
+        r"\.vbs$",
+        r"\.ps1$",
+    ],
+    "sensitive_info": [
+        r"\bpassword\b",
+        r"\bpasswd\b",
+        r"\bsecret\b",
+        r"\btoken\b",
+        r"\bapi_key\b",
+        r"\bapi_secret\b",
+        r"\bauth\b",
+        r"\bcookie\b",
+        r"\bsession\b",
+        r"\bcredit_card\b",
+        r"\bssn\b",
+        r"\bsocial_security\b",
+        r"\bprivate\b",
+        r"\bconfidential\b",
+    ],
+    "brute_force": [
+        r"\blogin\b",
+        r"\bauthenticate\b",
+        r"\bsignin\b",
+        r"\bpassword\b",
+        r"\bpasswd\b",
+    ],
+    "abnormal_request": [
+        r"\bnull\b",
+        r"\bundefined\b",
+        r"\binfinity\b",
+        r"\bNaN\b",
+        r"\bInfinity\b",
+        r"\bundefined\b",
+        r"\bnull\b",
     ],
 }
 
 # 检查请求是否包含攻击特征
-def check_waf_rules(request: Request) -> tuple[bool, str]:
+async def check_waf_rules(request: Request) -> tuple[bool, str]:
     # 检查请求路径
     path = request.url.path
+    
+    # 检查请求参数
+    query_params = dict(request.query_params)
+    query_string = str(request.query_params)
+    
+    # 检查请求头
+    headers = dict(request.headers)
+    headers_string = str(request.headers)
+    
+    # 检查请求体
+    body_string = ""
+    try:
+        # 仅检查文本类型的请求体
+        if request.headers.get("content-type", "").startswith("application/"):
+            body = await request.body()
+            body_string = body.decode("utf-8", errors="ignore")
+    except Exception:
+        pass
+    
+    # 合并所有要检查的内容
+    check_content = f"{path} {query_string} {headers_string} {body_string}"
+    
+    # 检查 SQL 注入
     for rule in WAF_RULES["sql_injection"]:
-        if rule in path:
-            return True, f"SQL injection detected in path: {path}"
+        if rule in check_content:
+            return True, f"SQL 注入攻击检测"
     
+    # 检查 XSS
     for rule in WAF_RULES["xss"]:
-        if rule in path:
-            return True, f"XSS detected in path: {path}"
+        if rule in check_content:
+            return True, f"跨站脚本攻击检测"
     
+    # 检查命令注入
     for rule in WAF_RULES["command_injection"]:
-        if rule in path:
-            return True, f"Command injection detected in path: {path}"
+        if rule in check_content:
+            return True, f"命令注入攻击检测"
+    
+    # 检查 CSRF
+    for rule in WAF_RULES["csrf"]:
+        if rule in check_content:
+            return True, f"跨站请求伪造攻击检测"
+    
+    # 检查文件上传
+    for rule in WAF_RULES["file_upload"]:
+        if rule in check_content:
+            return True, f"恶意文件上传检测"
+    
+    # 检查敏感信息泄露
+    for rule in WAF_RULES["sensitive_info"]:
+        if rule in check_content:
+            return True, f"敏感信息泄露检测"
+    
+    # 检查暴力破解
+    for rule in WAF_RULES["brute_force"]:
+        if rule in check_content:
+            return True, f"暴力破解攻击检测"
+    
+    # 检查异常请求
+    for rule in WAF_RULES["abnormal_request"]:
+        if rule in check_content:
+            return True, f"异常请求检测"
     
     return False, ""
 
@@ -180,8 +329,40 @@ async def waf_middleware(request: Request, call_next):
     except ValueError:
         pass
     
+    # 检查 IP 黑名单
+    if client_ip in ip_blacklist:
+        return JSONResponse(
+            status_code=403,
+            content={
+                "detail": "Access denied: IP address is blacklisted",
+                "attack_type": "IP 黑名单拦截"
+            }
+        )
+    
+    # 检查请求频率限制
+    current_time = time.time()
+    if client_ip in request_rate_limit:
+        # 清理过期的请求时间
+        request_rate_limit[client_ip] = [t for t in request_rate_limit[client_ip] if current_time - t < RATE_LIMIT_WINDOW]
+        # 检查是否超过限制
+        if len(request_rate_limit[client_ip]) >= RATE_LIMIT_MAX_REQUESTS:
+            # 添加到黑名单
+            ip_blacklist.add(client_ip)
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "detail": "Too many requests: Rate limit exceeded",
+                    "attack_type": "请求频率限制"
+                }
+            )
+    else:
+        request_rate_limit[client_ip] = []
+    
+    # 记录请求时间
+    request_rate_limit[client_ip].append(current_time)
+    
     # 检查 WAF 规则
-    is_attack, attack_message = check_waf_rules(request)
+    is_attack, attack_message = await check_waf_rules(request)
     
     # 记录访问日志
     access_log = {
@@ -192,8 +373,16 @@ async def waf_middleware(request: Request, call_next):
         "path": request.url.path,
         "query": dict(request.query_params),
         "user_agent": request.headers.get("user-agent", ""),
+        "content_type": request.headers.get("content-type", ""),
+        "accept": request.headers.get("accept", ""),
+        "accept_language": request.headers.get("accept-language", ""),
+        "accept_encoding": request.headers.get("accept-encoding", ""),
+        "connection": request.headers.get("connection", ""),
         "is_attack": is_attack,
-        "attack_message": attack_message if is_attack else None
+        "attack_message": attack_message if is_attack else None,
+        "is_blacklisted": client_ip in ip_blacklist,
+        "request_count": len(request_rate_limit.get(client_ip, [])),
+        "status": "blocked" if is_attack else "allowed"
     }
     access_logs.append(access_log)
     
@@ -203,6 +392,10 @@ async def waf_middleware(request: Request, call_next):
     
     # 如果检测到攻击，记录并阻止
     if is_attack:
+        # 添加到黑名单
+        ip_blacklist.add(client_ip)
+        
+        # 记录攻击日志
         attack_logs.append(access_log)
         if len(attack_logs) > 500:
             attack_logs.pop(0)
@@ -210,7 +403,7 @@ async def waf_middleware(request: Request, call_next):
         return JSONResponse(
             status_code=403,
             content={
-                "detail": "Access denied: Potential attack detected",
+                "detail": "访问被拒绝：检测到潜在攻击",
                 "attack_type": attack_message
             }
         )
@@ -259,14 +452,71 @@ async def get_status():
         "total_attacks": len(attack_logs),
         "recent_accesses": len(recent_logs),
         "recent_attacks": len(recent_attacks),
-        "ipv6_stats": await get_ipv6_stats()
+        "ipv6_stats": await get_ipv6_stats(),
+        "blacklist_count": len(ip_blacklist)
+    }
+
+# API 接口：获取日志分析
+@app.get("/api/logs-analysis")
+async def get_logs_analysis():
+    # 攻击类型分布
+    attack_types = {}
+    for log in attack_logs:
+        attack_msg = log.get("attack_message", "Unknown")
+        if attack_msg:
+            attack_types[attack_msg] = attack_types.get(attack_msg, 0) + 1
+    
+    # IP 地址分析
+    ip_analysis = {
+        "total_ips": len(set(log["ip"] for log in access_logs)),
+        "attack_ips": len(set(log["ip"] for log in attack_logs)),
+        "blacklisted_ips": len(ip_blacklist)
+    }
+    
+    # 请求方法分析
+    method_analysis = {}
+    for log in access_logs:
+        method = log.get("method", "Unknown")
+        method_analysis[method] = method_analysis.get(method, 0) + 1
+    
+    # 时间趋势分析（最近 60 分钟）
+    time_trend = []
+    current_time = time.time()
+    for i in range(60, 0, -1):
+        start_time = current_time - (i * 60)
+        end_time = current_time - ((i - 1) * 60)
+        
+        # 统计该时间段内的请求数和攻击数
+        requests_count = len([log for log in access_logs if start_time <= log["timestamp"] < end_time])
+        attacks_count = len([log for log in attack_logs if start_time <= log["timestamp"] < end_time])
+        
+        time_trend.append({
+            "timestamp": end_time,
+            "requests": requests_count,
+            "attacks": attacks_count
+        })
+    
+    # 状态分布
+    status_analysis = {
+        "allowed": len([log for log in access_logs if log.get("status") == "allowed"]),
+        "blocked": len([log for log in access_logs if log.get("status") == "blocked"])
+    }
+    
+    return {
+        "attack_types": attack_types,
+        "ip_analysis": ip_analysis,
+        "method_analysis": method_analysis,
+        "time_trend": time_trend,
+        "status_analysis": status_analysis,
+        "total_logs": len(access_logs),
+        "total_attacks": len(attack_logs)
     }
 
 # 根路径
 @app.get("/")
 async def root():
     return {
-        "message": "WAF for Feiniu NAS is running",
+        "message": "应用防火墙正在运行",
         "version": "1.0.0",
         "status": "active"
     }
@@ -301,6 +551,76 @@ async def logout(current_user: UserInDB = Depends(get_current_user)):
     # JWT 是无状态的，登出主要在前端处理（清除 token）
     # 这里可以添加额外的逻辑，如将 token 加入黑名单等
     return {"message": "Successfully logged out"}
+
+# API 接口：获取防火墙配置
+@app.get("/api/firewall/config")
+async def get_firewall_config(current_user: UserInDB = Depends(get_current_user)):
+    return {
+        "waf_rules": WAF_RULES,
+        "rate_limit": {
+            "window": RATE_LIMIT_WINDOW,
+            "max_requests": RATE_LIMIT_MAX_REQUESTS
+        },
+        "blacklist": list(ip_blacklist)
+    }
+
+# API 接口：更新防火墙规则
+@app.post("/api/firewall/rules")
+async def update_firewall_rules(
+    rules: dict,
+    current_user: UserInDB = Depends(get_current_user)
+):
+    global WAF_RULES
+    WAF_RULES.update(rules)
+    return {"message": "Firewall rules updated successfully", "rules": WAF_RULES}
+
+# API 接口：添加 IP 到黑名单
+@app.post("/api/firewall/blacklist/add")
+async def add_ip_to_blacklist(
+    ip: str,
+    current_user: UserInDB = Depends(get_current_user)
+):
+    ip_blacklist.add(ip)
+    return {"message": f"IP {ip} added to blacklist successfully", "blacklist": list(ip_blacklist)}
+
+# API 接口：从黑名单移除 IP
+@app.post("/api/firewall/blacklist/remove")
+async def remove_ip_from_blacklist(
+    ip: str,
+    current_user: UserInDB = Depends(get_current_user)
+):
+    if ip in ip_blacklist:
+        ip_blacklist.remove(ip)
+        return {"message": f"IP {ip} removed from blacklist successfully", "blacklist": list(ip_blacklist)}
+    else:
+        return {"message": f"IP {ip} not found in blacklist", "blacklist": list(ip_blacklist)}
+
+# API 接口：清空黑名单
+@app.post("/api/firewall/blacklist/clear")
+async def clear_blacklist(
+    current_user: UserInDB = Depends(get_current_user)
+):
+    ip_blacklist.clear()
+    return {"message": "Blacklist cleared successfully", "blacklist": list(ip_blacklist)}
+
+# API 接口：更新速率限制配置
+@app.post("/api/firewall/rate-limit")
+async def update_rate_limit(
+    config: dict,
+    current_user: UserInDB = Depends(get_current_user)
+):
+    global RATE_LIMIT_WINDOW, RATE_LIMIT_MAX_REQUESTS
+    if "window" in config:
+        RATE_LIMIT_WINDOW = config["window"]
+    if "max_requests" in config:
+        RATE_LIMIT_MAX_REQUESTS = config["max_requests"]
+    return {
+        "message": "Rate limit configuration updated successfully",
+        "config": {
+            "window": RATE_LIMIT_WINDOW,
+            "max_requests": RATE_LIMIT_MAX_REQUESTS
+        }
+    }
 
 # 健康检查
 @app.get("/health")
