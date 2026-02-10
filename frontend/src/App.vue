@@ -1,22 +1,29 @@
 <template>
   <div class="app">
-    <header class="header">
-      <div class="logo">
-        <h1>WAF for Feiniu NAS</h1>
-      </div>
-      <nav class="nav">
-        <router-link to="/" class="nav-item">仪表盘</router-link>
-        <router-link to="/access-logs" class="nav-item">访问日志</router-link>
-        <router-link to="/attack-logs" class="nav-item">攻击日志</router-link>
-        <router-link to="/ipv6-stats" class="nav-item">IPv6 统计</router-link>
-      </nav>
-    </header>
-    <main class="main">
+    <!-- 登录页面不显示导航栏和页脚 -->
+    <template v-if="$route.path !== '/login'">
+      <header class="header">
+        <div class="logo">
+          <h1>WAF for Feiniu NAS</h1>
+        </div>
+        <nav class="nav">
+          <router-link to="/" class="nav-item">仪表盘</router-link>
+          <router-link to="/access-logs" class="nav-item">访问日志</router-link>
+          <router-link to="/attack-logs" class="nav-item">攻击日志</router-link>
+          <router-link to="/ipv6-stats" class="nav-item">IPv6 统计</router-link>
+        </nav>
+      </header>
+      <main class="main">
+        <router-view />
+      </main>
+      <footer class="footer">
+        <p>&copy; 2026 WAF for Feiniu NAS. All rights reserved.</p>
+      </footer>
+    </template>
+    <!-- 登录页面只显示内容 -->
+    <template v-else>
       <router-view />
-    </main>
-    <footer class="footer">
-      <p>&copy; 2026 WAF for Feiniu NAS. All rights reserved.</p>
-    </footer>
+    </template>
   </div>
 </template>
 
