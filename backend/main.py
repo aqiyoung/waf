@@ -1,3 +1,7 @@
+import os
+# 禁用 passlib 的 wrap bug 检测，避免密码长度超过 72 字节的错误
+os.environ['PASSLIB_NO_BYPASS_WRAP_BUG'] = '1'
+
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -6,7 +10,6 @@ import uvicorn
 import time
 import ipaddress
 import json
-import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
