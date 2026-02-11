@@ -62,5 +62,3 @@ export const getIPv6Stats = () => {
 export const getStatus = () => {
   return api.get('/status')
 }
-
-export default api
