@@ -190,6 +190,21 @@ body {
   width: 80px;
 }
 
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .logo h1,
+.sidebar.collapsed .version {
+  display: none;
+}
+
+.sidebar.collapsed .logo {
+  justify-content: center;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px;
+}
+
 .sidebar-header {
   padding: 20px;
   border-bottom: 1px solid #30363d;
