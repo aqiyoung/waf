@@ -366,9 +366,16 @@ class SimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     
     def get_client_ip(self):
         """获取真实的客户端IP地址"""
-        # 检查是否有反向代理的头
-        x_forwarded_for = self.headers.get("X-Forwarded-For")
-        x_real_ip = self.headers.get("X-Real-IP")
+        # 检查是否有反向代理的头（不区分大小写）
+        x_forwarded_for = None
+        x_real_ip = None
+        
+        # 遍历所有请求头，查找X-Forwarded-For和X-Real-IP（不区分大小写）
+        for key, value in self.headers.items():
+            if key.lower() == "x-forwarded-for":
+                x_forwarded_for = value
+            elif key.lower() == "x-real-ip":
+                x_real_ip = value
         
         if x_forwarded_for:
             # X-Forwarded-For 格式通常为: client_ip, proxy1_ip, proxy2_ip
