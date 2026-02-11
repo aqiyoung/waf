@@ -11,6 +11,13 @@ export default defineConfig({
         target: 'http://localhost:8009',
         changeOrigin: true
       }
-    }
+    },
+    middleware: [
+      (req, res, next) => {
+        // Add CSP header to allow Vite's HMR
+        res.setHeader('Content-Security-Policy', "script-src 'self' 'unsafe-eval' 'unsafe-inline';");
+        next();
+      }
+    ]
   }
 })

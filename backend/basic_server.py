@@ -38,10 +38,16 @@ def save_tokens():
 def generate_token(username):
     token = f"token_{username}_{int(time.time())}"
     tokens[token] = username
+    print(f"Generated token: {token}")
+    print(f"Tokens dict before save: {tokens}")
     save_tokens()
+    print(f"Tokens dict after save: {tokens}")
     return token
 
 def verify_token(token):
+    print(f"Verifying token: {token}")
+    print(f"Tokens dict: {tokens}")
+    print(f"Token in tokens: {token in tokens}")
     return token in tokens
 
 # 加载tokens

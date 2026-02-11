@@ -49,7 +49,9 @@ export const getAuthHeader = () => {
   const token = localStorage.getItem('token')
   const tokenType = localStorage.getItem('token_type')
   if (token && tokenType) {
-    return `${tokenType} ${token}`
+    // 将token_type首字母大写，以匹配后端的要求
+    const formattedTokenType = tokenType.charAt(0).toUpperCase() + tokenType.slice(1)
+    return `${formattedTokenType} ${token}`
   }
   return null
 }
