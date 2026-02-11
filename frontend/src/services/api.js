@@ -10,6 +10,8 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const authHeader = getAuthHeader()
+    console.log('Adding auth header:', authHeader)
+    console.log('Request URL:', config.url)
     if (authHeader) {
       config.headers.Authorization = authHeader
     }
@@ -26,8 +28,12 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
+    console.log('API error:', error)
+    console.log('Error status:', error.response?.status)
+    console.log('Error URL:', error.config?.url)
     // 处理 401 未授权错误
     if (error.response && error.response.status === 401) {
+      console.log('401 error received, logging out...')
       // 清除认证数据
       clearAuthData()
       // 跳转到登录页
