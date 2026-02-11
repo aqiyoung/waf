@@ -1,0 +1,21 @@
+{
+  "name": "下一代Web应用防火墙",
+  "short_name": "Web应用防火墙",
+  "description": "保护您的应用免受恶意攻击",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1890ff",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

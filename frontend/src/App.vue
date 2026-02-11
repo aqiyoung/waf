@@ -199,6 +199,11 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.logo:hover {
+  transform: translateX(5px);
 }
 
 .logo-icon {
@@ -207,34 +212,49 @@ body {
 
 .shield {
   position: relative;
-  width: 32px;
-  height: 28px;
+  width: 36px;
+  height: 32px;
   background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-  border-radius: 3px 3px 0 0;
+  border-radius: 6px 6px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+  transition: all 0.3s ease;
 }
 
 .shield::before {
   content: '';
   position: absolute;
-  bottom: -8px;
+  bottom: -10px;
   left: 0;
   width: 0;
   height: 0;
-  border-left: 16px solid transparent;
-  border-right: 16px solid transparent;
-  border-top: 8px solid #096dd9;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 10px solid #096dd9;
+}
+
+.shield:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.5);
 }
 
 .lightning {
-  font-size: 16px;
+  font-size: 18px;
   position: relative;
   z-index: 1;
-  animation: pulse 2s infinite;
+  animation: pulse 2s infinite, glow 1.5s ease-in-out infinite alternate;
   color: white;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  }
+  to {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 30px rgba(24, 144, 255, 0.6);
+  }
 }
 
 @keyframes pulse {
@@ -424,15 +444,30 @@ body {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.footer-logo:hover {
+  transform: scale(1.05);
 }
 
 .footer-icon {
   font-size: 24px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 8px rgba(24, 144, 255, 0.4);
 }
 
 .footer-title {
   font-size: 18px;
   font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.footer-logo:hover .footer-title {
+  color: #1890ff;
 }
 
 .footer-info {
