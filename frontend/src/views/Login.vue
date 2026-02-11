@@ -123,10 +123,16 @@ export default {
         })
         
         // 存储 token 到 localStorage
+        console.log('Storing token:', response.data.access_token)
         localStorage.setItem('token', response.data.access_token)
         localStorage.setItem('token_type', response.data.token_type)
         
+        // 验证存储
+        console.log('Token stored:', localStorage.getItem('token'))
+        console.log('Token type stored:', localStorage.getItem('token_type'))
+        
         // 跳转到仪表盘
+        console.log('Navigating to dashboard...')
         router.push('/')
       } catch (error) {
         errorMessage.value = error.response?.data?.detail || '登录失败，请检查用户名和密码'
