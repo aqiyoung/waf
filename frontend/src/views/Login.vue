@@ -108,12 +108,13 @@ export default {
         errorMessage.value = ''
         
         // 直接使用 axios 发送登录请求
-        const response = await axios.post('http://localhost:8009/api/auth/login', {
-          username: formState.username,
-          password: formState.password
-        }, {
+        const response = await axios.post('http://localhost:8009/api/auth/login', 
+          new URLSearchParams({
+            username: formState.username,
+            password: formState.password
+          }), {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/x-www-form-urlencoded'
           }
         })
         
