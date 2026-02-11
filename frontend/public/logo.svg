@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- 定义渐变和滤镜 -->
+  <defs>
+    <!-- 盾牌渐变 -->
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#13c2c2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0fb9b1;stop-opacity:1" />
+    </linearGradient>
+    <!-- 背景渐变 -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0fdf4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6f7ee;stop-opacity:1" />
+    </linearGradient>
+    <!-- 网格图案 -->
+    <pattern id="gridPattern" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(19,194,194,0.1)" stroke-width="0.5" />
+    </pattern>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="120" height="120" fill="url(#bgGradient)" />
+  
+  <!-- 网格背景 -->
+  <rect width="120" height="120" fill="url(#gridPattern)" />
+  
+  <!-- 盾牌主体 -->
+  <path d="M60 30 L30 45 L35 85 L60 100 L85 85 L90 45 Z" fill="url(#shieldGradient)" />
+  
+  <!-- 盾牌高光 -->
+  <path d="M60 30 L40 40 L45 70 L60 85 L75 70 L80 40 Z" fill="rgba(255,255,255,0.2)" />
+  
+  <!-- 闪电图标 -->
+  <path d="M50 50 L55 70 L45 70 L55 90 L60 70 L70 90 L75 70 L65 70 L70 50 Z" fill="white" />
+  
+  <!-- 装饰线条 -->
+  <path d="M30 45 L40 50" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+  <path d="M90 45 L80 50" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+  <path d="M35 85 L45 90" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+  <path d="M85 85 L75 90" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
+</svg>

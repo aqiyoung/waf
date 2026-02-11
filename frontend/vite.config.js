@@ -19,13 +19,6 @@ export default defineConfig({
           });
         }
       }
-    },
-    middleware: [
-      (req, res, next) => {
-        // Add CSP header to allow Vite's HMR and favicon
-        res.setHeader('Content-Security-Policy', "script-src 'self' 'unsafe-eval' 'unsafe-inline'; img-src 'self';");
-        next();
-      }
-    ]
+    }
   }
 })

@@ -7,9 +7,7 @@
         <div class="sidebar-header">
           <div class="logo">
             <div class="logo-icon">
-              <div class="shield">
-                <div class="lightning">⚡</div>
-              </div>
+              <img src="/security-logo.svg?ver=2.0" alt="应用防火墙" class="logo-svg" />
             </div>
             <h1>应用防火墙</h1>
           </div>
@@ -70,7 +68,7 @@
           <div class="footer-content">
             <div class="footer-left">
               <div class="footer-logo">
-                <span class="footer-icon">🛡️</span>
+                <img src="/security-logo.svg?ver=2.0" alt="应用防火墙" class="footer-logo-svg" />
                 <span class="footer-title">应用防火墙</span>
               </div>
               <div class="footer-info">
@@ -225,67 +223,19 @@ body {
   position: relative;
 }
 
-.shield {
-  position: relative;
+.logo-svg {
   width: 36px;
-  height: 32px;
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-  border-radius: 6px 6px 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+  height: 36px;
   transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 12px rgba(24, 144, 255, 0.4));
 }
 
-.shield::before {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 0;
-  width: 0;
-  height: 0;
-  border-left: 18px solid transparent;
-  border-right: 18px solid transparent;
-  border-top: 10px solid #096dd9;
-}
-
-.shield:hover {
+.logo-svg:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.5);
+  filter: drop-shadow(0 6px 16px rgba(24, 144, 255, 0.5));
 }
 
-.lightning {
-  font-size: 18px;
-  position: relative;
-  z-index: 1;
-  animation: pulse 2s infinite, glow 1.5s ease-in-out infinite alternate;
-  color: white;
-}
 
-@keyframes glow {
-  from {
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-  }
-  to {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 30px rgba(24, 144, 255, 0.6);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
 
 .logo h1 {
   font-size: 18px;
@@ -466,13 +416,10 @@ body {
   transform: scale(1.05);
 }
 
-.footer-icon {
-  font-size: 24px;
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 2px 8px rgba(24, 144, 255, 0.4);
+.footer-logo-svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 8px rgba(24, 144, 255, 0.4));
 }
 
 .footer-title {
