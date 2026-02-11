@@ -14,12 +14,38 @@ users = {
 
 # 简单的 token 管理
 tokens = {}
+TOKEN_FILE = "tokens.json"
+
+def load_tokens():
+    """从文件加载tokens"""
+    global tokens
+    if os.path.exists(TOKEN_FILE):
+        try:
+            with open(TOKEN_FILE, 'r') as f:
+                tokens = json.load(f)
+        except Exception as e:
+            print(f"Error loading tokens: {e}")
+            tokens = {}
+
+def save_tokens():
+    """保存tokens到文件"""
+    try:
+        with open(TOKEN_FILE, 'w') as f:
+            json.dump(tokens, f)
+    except Exception as e:
+        print(f"Error saving tokens: {e}")
 
 def generate_token(username):
-    return f"token_{username}_{int(time.time())}"
+    token = f"token_{username}_{int(time.time())}"
+    tokens[token] = username
+    save_tokens()
+    return token
 
 def verify_token(token):
     return token in tokens
+
+# 加载tokens
+load_tokens()
 
 # 存储访问日志和攻击记录
 access_logs = []
@@ -300,6 +326,7 @@ class SimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             token = self.get_token()
             if token and verify_token(token):
                 del tokens[token]
+                save_tokens()
             
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
