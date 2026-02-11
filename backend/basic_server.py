@@ -351,6 +351,7 @@ class SimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
 # 启动服务器
-with socketserver.TCPServer(("0.0.0.0", PORT), SimpleHTTPRequestHandler) as httpd:
+# 使用空字符串作为地址，同时监听IPv4和IPv6地址
+with socketserver.TCPServer(("", PORT), SimpleHTTPRequestHandler) as httpd:
     print(f"Server running at http://0.0.0.0:{PORT}")
     httpd.serve_forever()
