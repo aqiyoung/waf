@@ -67,7 +67,7 @@ class SimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         path = parsed_path.path
         
         # 获取客户端 IP
-        client_ip = self.client_address[0]
+        client_ip = self.get_client_ip()
         
         # 记录访问日志
         access_log = {
@@ -274,7 +274,7 @@ class SimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         path = parsed_path.path
         
         # 获取客户端 IP
-        client_ip = self.client_address[0]
+        client_ip = self.get_client_ip()
         
         # 读取请求体
         content_length = int(self.headers['Content-Length'])
@@ -363,6 +363,21 @@ class SimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(response).encode('utf-8'))
             return False
         return True
+    
+    def get_client_ip(self):
+        """获取真实的客户端IP地址"""
+        # 检查是否有反向代理的头
+        x_forwarded_for = self.headers.get("X-Forwarded-For")
+        x_real_ip = self.headers.get("X-Real-IP")
+        
+        if x_forwarded_for:
+            # X-Forwarded-For 格式通常为: client_ip, proxy1_ip, proxy2_ip
+            return x_forwarded_for.split(",")[0].strip()
+        elif x_real_ip:
+            return x_real_ip.strip()
+        else:
+            # 直接返回连接的IP地址
+            return self.client_address[0]
     
     def get_token(self):
         auth_header = self.headers.get("Authorization")
