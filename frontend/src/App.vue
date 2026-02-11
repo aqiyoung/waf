@@ -6,7 +6,11 @@
       <aside :class="['sidebar', { collapsed: sidebarCollapsed }]">
         <div class="sidebar-header">
           <div class="logo">
-            <div class="logo-icon">🛡️</div>
+            <div class="logo-icon">
+              <div class="shield">
+                <div class="lightning">⚡</div>
+              </div>
+            </div>
             <h1>应用防火墙</h1>
           </div>
         </div>
@@ -198,7 +202,54 @@ body {
 }
 
 .logo-icon {
-  font-size: 24px;
+  position: relative;
+}
+
+.shield {
+  position: relative;
+  width: 32px;
+  height: 28px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border-radius: 3px 3px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+}
+
+.shield::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 16px solid transparent;
+  border-right: 16px solid transparent;
+  border-top: 8px solid #096dd9;
+}
+
+.lightning {
+  font-size: 16px;
+  position: relative;
+  z-index: 1;
+  animation: pulse 2s infinite;
+  color: white;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .logo h1 {

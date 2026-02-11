@@ -3,7 +3,11 @@
     <div class="login-card">
       <div class="login-header">
         <div class="logo">
-          <div class="logo-icon">🛡️</div>
+          <div class="logo-icon">
+            <div class="shield">
+              <div class="lightning">⚡</div>
+            </div>
+          </div>
           <h2>下一代Web应用防火墙</h2>
         </div>
         <p>请输入用户名和密码登录系统</p>
@@ -204,7 +208,53 @@ body {
 }
 
 .logo-icon {
-  font-size: 32px;
+  position: relative;
+}
+
+.shield {
+  position: relative;
+  width: 40px;
+  height: 36px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}
+
+.shield::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-top: 10px solid #096dd9;
+}
+
+.lightning {
+  font-size: 20px;
+  position: relative;
+  z-index: 1;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .logo h2 {
